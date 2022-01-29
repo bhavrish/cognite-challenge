@@ -68,6 +68,7 @@ with row1_2:
     """)
 
 
+
 row2_1, row2_2 = st.columns((2,1))
 
 with row2_1:
