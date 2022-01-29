@@ -1,3 +1,4 @@
+from urllib.error import HTTPError
 import urllib.request
 import re
 import numpy as np
@@ -10,17 +11,34 @@ import numpy as np
 def flatten(data):
     return [item for sublist in data for item in sublist]
 
-source_urls = ["https://www.ndbc.noaa.gov/data/realtime2/KIKT.txt","https://www.ndbc.noaa.gov/data/realtime2/KBQX.txt","https://www.ndbc.noaa.gov/data/realtime2/KMIS.txt"]
+def get_url_list(station_list):
+    url_list = []
+    source_url = "https://www.ndbc.noaa.gov/data/realtime2/"
+    url_ext = ".txt"
+    for station in station_list:
+        url_list.append(source_url+station+url_ext)
+    return url_list
+
+#list of federal aviation administration stations
+faas_station_list = ['KATP','KBBF','KBQX','KCMB','KCRH','KCVW','KDLP','KEHC','KEIR','KEMK','KGBK','KGHB','KGRY','KGUL','KGVX','KHHV','KHQI','KIKT','KIPN','KMDJ','KMIS','KMIU','KMYT','KMZG','KOPM','KSCF','KSPR','KSQE','KSTZ','KVAF','KVBS','KVKY','KVNP','KVOA','KVQT','KXIH','KXPY']
+#++".txt"
+faas_url = get_url_list(faas_station_list)
 header = ["year", "month", "day", "hour", "minute", "WDIR_wind_direction","WSPD_wind_speed","GST_gust_speed","WVHT_wave_height","DPD_dominant_wave_period","APD_average_wave_period","MWD_wave_degree","PRES_sea_level_pressure","ATMP_air_temperature","WTMP_sea_surface_temperature","DEWP_dewpoint_temperature","VIS_station_visibility","PTDY_pressure_tendency","TIDE_water_level","station_name"]
 
+# file = urllib.request.urlopen("https://www.ndbc.noaa.gov/data/realtime2/KCVW.txt")
+# print(type(file))
+
 combined_files = []
-for url in source_urls:
+for url in faas_url:
     #retrieve station name from url
     pattern = '2/(.*?)\.'
     station_name = re.search(pattern, url).group(1)
-    if station_name == 'KBQX': station_name = 'KAPT'
+    print(station_name)
     #get data
-    file = urllib.request.urlopen(url)
+    try:
+        file = urllib.request.urlopen(url)
+    except HTTPError as e:
+        continue #skip that station as it has no data
     current_file = []
     for line in file:
         decoded_line = line.decode("utf-8")
@@ -35,5 +53,5 @@ for url in source_urls:
 #     #save as csv
 file_with_header = flatten(combined_files)
 file_with_header.insert(0,header) #adding in clean header
-np.savetxt("all_stations.csv",file_with_header,delimiter=",",fmt='% s')
+np.savetxt("all_stations_v2.csv",file_with_header,delimiter=",",fmt='% s')
 
