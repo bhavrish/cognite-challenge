@@ -118,6 +118,7 @@ st.write("")
 st.write("")
 st.write("**Forecasted wind speed and direction 72 hours from today**")
 
+
 row5_1, row5_2 = st.columns((4,1))
 with row5_1:
     st.image('sp1.png')
